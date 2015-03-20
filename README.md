@@ -1,2 +1,4 @@
 # nlu-intention
-Bayesian network-based Sentiment analysis and Intention recognition for Natural Language Understanding of Indonesian Twitter tweets
+
+**Bayesian Network-based Sentiment Analysis and Topic Classification for Natural Language Understanding of Indonesian Twitter Tweets**
+
