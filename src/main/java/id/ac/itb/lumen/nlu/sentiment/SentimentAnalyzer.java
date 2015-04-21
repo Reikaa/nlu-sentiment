@@ -1,10 +1,10 @@
 package id.ac.itb.lumen.nlu.sentiment;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import com.opencsv.CSVReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,16 @@ import java.util.stream.Collectors;
  */
 @Component
 public class SentimentAnalyzer {
+
+    private static Logger log = LoggerFactory.getLogger(SentimentAnalyzer.class);
+    public static Set<String> STOP_WORDS_ID = ImmutableSet.of(
+            "di", "ke", "ini", "dengan", "untuk", "yang", "tak", "tidak", "gak",
+            "dari", "dan", "atau", "bisa", "kita", "ada", "itu",
+            "akan", "jadi", "menjadi", "tetap", "per", "bagi", "saat",
+            "tapi", "bukan", "adalah", "pula", "aja", "saja",
+            "kalo", "kalau", "karena", "pada", "kepada", "terhadap",
+            "amp" // &amp;
+    );
 
     private String[] headerNames;
     private List<String[]> rows;
@@ -63,6 +74,14 @@ public class SentimentAnalyzer {
 
     public void removeNumbers() {
         texts = Maps.transformValues(texts, it -> it.replaceAll("[0-9]+", ""));
+    }
+
+    public void removeStopWords(String... additions) {
+        final Sets.SetView<String> stopWords = Sets.union(STOP_WORDS_ID, ImmutableSet.copyOf(additions));
+        log.info("Removing {} stop words for {} texts: {}", stopWords.size(), texts.size(), stopWords);
+        stopWords.forEach(stopWord ->
+            texts = Maps.transformValues(texts, it -> it.replaceAll("(\\W|^)" + Pattern.quote(stopWord) + "(\\W|$)", ""))
+        );
     }
 
     public void splitWords() {
