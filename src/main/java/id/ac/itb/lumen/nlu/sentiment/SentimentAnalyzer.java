@@ -23,16 +23,50 @@ import java.util.stream.Collectors;
 @Component
 public class SentimentAnalyzer {
 
-    private static Logger log = LoggerFactory.getLogger(SentimentAnalyzer.class);
-    public static Set<String> STOP_WORDS_ID = ImmutableSet.of(
+    private static final Logger log = LoggerFactory.getLogger(SentimentAnalyzer.class);
+    public static final Set<String> STOP_WORDS_ID = ImmutableSet.of(
             "di", "ke", "ini", "dengan", "untuk", "yang", "tak", "tidak", "gak",
             "dari", "dan", "atau", "bisa", "kita", "ada", "itu",
             "akan", "jadi", "menjadi", "tetap", "per", "bagi", "saat",
             "tapi", "bukan", "adalah", "pula", "aja", "saja",
             "kalo", "kalau", "karena", "pada", "kepada", "terhadap",
-            "amp" // &amp;
+            "amp", // &amp;
+            "rt" // RT:
     );
+    /**
+     * key: canonical, value: aliases
+     */
+    public static final Multimap<String, String> CANONICAL_WORDS;
 
+    static {
+        final ImmutableMultimap.Builder<String, String> mmb = ImmutableMultimap.builder();
+        mmb.putAll("yang", "yg", "yng");
+        mmb.putAll("dengan", "dg", "dgn");
+        mmb.putAll("saya", "sy");
+        mmb.putAll("punya", "pny");
+        mmb.putAll("ya", "iya");
+        mmb.putAll("tidak", "tak", "tdk");
+        mmb.putAll("jangan", "jgn", "jngn");
+        mmb.putAll("jika", "jika", "bila");
+        mmb.putAll("sudah", "udah", "sdh", "dah", "telah", "tlh");
+        mmb.putAll("hanya", "hny");
+        mmb.putAll("banyak", "byk", "bnyk");
+        mmb.putAll("juga", "jg");
+        mmb.putAll("mereka", "mrk", "mereka");
+        mmb.putAll("gue", "gw", "gwe", "gua", "gwa");
+        mmb.putAll("sebagai", "sbg", "sbgai");
+        mmb.putAll("silaturahim", "silaturrahim", "silaturahmi", "silaturrahmi");
+        mmb.putAll("shalat", "sholat", "salat", "solat");
+        mmb.putAll("harus", "hrs");
+        mmb.putAll("oleh", "olh");
+        mmb.putAll("tentang", "ttg", "tntg");
+        mmb.putAll("dalam", "dlm");
+        mmb.putAll("banget", "bngt", "bgt", "bingit", "bingits");
+        CANONICAL_WORDS = mmb.build();
+    }
+
+
+    Map<String, Double> normWordCounts;
     private String[] headerNames;
     private List<String[]> rows;
     /**
@@ -76,11 +110,18 @@ public class SentimentAnalyzer {
         texts = Maps.transformValues(texts, it -> it.replaceAll("[0-9]+", ""));
     }
 
+    public void canonicalizeWords() {
+        log.info("Canonicalize {} words for {} texts: {}", CANONICAL_WORDS.size(), texts.size(), CANONICAL_WORDS);
+        CANONICAL_WORDS.entries().forEach(entry ->
+                        texts = Maps.transformValues(texts, it -> it.replaceAll("(\\W|^)" + Pattern.quote(entry.getValue()) + "(\\W|$)", "\\1" + entry.getKey() + "\\2"))
+        );
+    }
+
     public void removeStopWords(String... additions) {
         final Sets.SetView<String> stopWords = Sets.union(STOP_WORDS_ID, ImmutableSet.copyOf(additions));
         log.info("Removing {} stop words for {} texts: {}", stopWords.size(), texts.size(), stopWords);
         stopWords.forEach(stopWord ->
-            texts = Maps.transformValues(texts, it -> it.replaceAll("(\\W|^)" + Pattern.quote(stopWord) + "(\\W|$)", ""))
+            texts = Maps.transformValues(texts, it -> it.replaceAll("(\\W|^)" + Pattern.quote(stopWord) + "(\\W|$)", "\\1\\2"))
         );
     }
 
