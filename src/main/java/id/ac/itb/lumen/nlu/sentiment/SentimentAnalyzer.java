@@ -18,12 +18,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * Common text mining functionality.
  * Created by ceefour on 12/04/2015.
  */
 @Component
 public class SentimentAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(SentimentAnalyzer.class);
+    /**
+     * Indonesian stop words.
+     */
     public static final Set<String> STOP_WORDS_ID = ImmutableSet.of(
             "di", "ke", "ini", "dengan", "untuk", "yang", "tak", "tidak", "gak",
             "dari", "dan", "atau", "bisa", "kita", "ada", "itu",
@@ -39,6 +43,7 @@ public class SentimentAnalyzer {
     public static final Multimap<String, String> CANONICAL_WORDS;
 
     static {
+        // Define contents of CANONICAL_WORDS
         final ImmutableMultimap.Builder<String, String> mmb = ImmutableMultimap.builder();
         mmb.putAll("yang", "yg", "yng");
         mmb.putAll("dengan", "dg", "dgn");
@@ -65,9 +70,17 @@ public class SentimentAnalyzer {
         CANONICAL_WORDS = mmb.build();
     }
 
-
+    /**
+     * Normalized word counts. Key=word. Value=normalized word count.
+     */
     Map<String, Double> normWordCounts;
+    /**
+     * Header names from the CSV file.
+     */
     private String[] headerNames;
+    /**
+     * Raw data of CSV rows.
+     */
     private List<String[]> rows;
     /**
      * key=row ID. value=original text
@@ -82,6 +95,11 @@ public class SentimentAnalyzer {
      */
     Map<String, List<String>> words;
 
+    /**
+     * Read CSV file {@code f} and put its contents into {@link #rows},
+     * {@link #texts}, and {@link #origTexts}.
+     * @param f
+     */
     public void readCsv(File f) {
         try (final CSVReader csv = new CSVReader(new FileReader(f))) {
             headerNames = csv.readNext(); // header
@@ -94,22 +112,37 @@ public class SentimentAnalyzer {
         }
     }
 
+    /**
+     * Lower case all texts.
+     */
     public void lowerCaseAll() {
         texts = Maps.transformValues(texts, String::toLowerCase);
     }
 
+    /**
+     * Remove http(s) links from texts.
+     */
     public void removeLinks() {
         texts = Maps.transformValues(texts, it -> it.replaceAll("http(s?):\\/\\/(\\S+)", " "));
     }
 
+    /**
+     * Remove punctuation symbols from texts.
+     */
     public void removePunctuation() {
         texts = Maps.transformValues(texts, it -> it.replaceAll("[^a-zA-Z0-9]+", " "));
     }
 
+    /**
+     * Remove numbers from texts.
+     */
     public void removeNumbers() {
         texts = Maps.transformValues(texts, it -> it.replaceAll("[0-9]+", ""));
     }
 
+    /**
+     * Canonicalize different word forms using {@link #CANONICAL_WORDS}.
+     */
     public void canonicalizeWords() {
         log.info("Canonicalize {} words for {} texts: {}", CANONICAL_WORDS.size(), texts.size(), CANONICAL_WORDS);
         CANONICAL_WORDS.entries().forEach(entry ->
@@ -117,6 +150,10 @@ public class SentimentAnalyzer {
         );
     }
 
+    /**
+     * Remove stop words using {@link #STOP_WORDS_ID} and {@code additions}.
+     * @param additions
+     */
     public void removeStopWords(String... additions) {
         final Sets.SetView<String> stopWords = Sets.union(STOP_WORDS_ID, ImmutableSet.copyOf(additions));
         log.info("Removing {} stop words for {} texts: {}", stopWords.size(), texts.size(), stopWords);
@@ -125,6 +162,9 @@ public class SentimentAnalyzer {
         );
     }
 
+    /**
+     * Split texts into {@link #words}.
+     */
     public void splitWords() {
         Splitter whitespace = Splitter.on(Pattern.compile("\\s+")).omitEmptyStrings().trimResults();
         words = Maps.transformValues(texts, it -> whitespace.splitToList(it));

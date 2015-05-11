@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Baysian network probabilistic variable.
  * Created by ceefour on 22/04/2015.
  */
 public class ProbabilisticVariable {
@@ -25,6 +26,11 @@ public class ProbabilisticVariable {
         this.name = name;
     }
 
+    /**
+     * Name of probabilistic state, in sentiment analysis this is the word,
+     * e.g. "islam", "nasional", etc.
+     * @return
+     */
     public String getName() {
         return name;
     }
@@ -33,6 +39,11 @@ public class ProbabilisticVariable {
         this.name = name;
     }
 
+    /**
+     * Direct probabilistic states for this variable (excluding
+     * states from {@link #getDependencies()}).
+     * @return
+     */
     public List<ProbabilisticState> getStates() {
         return states;
     }
@@ -45,6 +56,10 @@ public class ProbabilisticVariable {
         return dependencies;
     }
 
+    /**
+     * Prior probabilities for each {@link ProbabilisticState} combination.
+     * @return
+     */
     public Map<List<ProbabilisticState>, Double> getProbabilities() {
         return probabilities;
     }

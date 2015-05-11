@@ -3,6 +3,7 @@ package id.ac.itb.lumen.nlu.sentiment;
 import java.io.Serializable;
 
 /**
+ * Bayesian network probabilistic state.
  * Created by ceefour on 22/04/2015.
  */
 public class ProbabilisticState {
@@ -20,6 +21,10 @@ public class ProbabilisticState {
         this.name = name;
     }
 
+    /**
+     * Parent probabilistic variable where this state is contained.
+     * @return
+     */
     public ProbabilisticVariable getVariable() {
         return variable;
     }
@@ -28,6 +33,10 @@ public class ProbabilisticState {
         this.variable = variable;
     }
 
+    /**
+     * Name of probabilistic state, usually either {@link #TRUE} or {@link #FALSE}.
+     * @return
+     */
     public String getName() {
         return name;
     }

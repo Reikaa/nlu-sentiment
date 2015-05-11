@@ -13,6 +13,9 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Main entry point of sentiment analysis application.
+ */
 @SpringBootApplication
 @Profile("nlu-sentiment")
 public class NluSentimentApplication implements CommandLineRunner {
@@ -31,8 +34,21 @@ public class NluSentimentApplication implements CommandLineRunner {
      * key: {screenName}/{word}
      */
     protected Map<String, Double> wordNormLengthByScreenName = new LinkedHashMap<>();
+    /**
+     * All of the words that were read.
+     */
     protected Set<String> allWords = new LinkedHashSet<>();
 
+    /**
+     * Creates a {@link SentimentAnalyzer} then analyzes the file {@code f},
+     * with limiting words to {@code wordLimit} (based on top word frequency),
+     * and additional stop words of {@code moreStopWords} (base stop words
+     * are {@link SentimentAnalyzer#STOP_WORDS_ID}.
+     * @param f
+     * @param wordLimit
+     * @param moreStopWords
+     * @return
+     */
     protected SentimentAnalyzer analyze(File f, int wordLimit, Set<String> moreStopWords) {
         final SentimentAnalyzer sentimentAnalyzer = new SentimentAnalyzer();
         sentimentAnalyzer.readCsv(f);
@@ -69,6 +85,13 @@ public class NluSentimentApplication implements CommandLineRunner {
         return sentimentAnalyzer;
     }
 
+    /**
+     * Train Bayesian network {@code bn}, with help of {@link #analyze(File, int, Set)}.
+     * @param bn
+     * @param f
+     * @param screenName
+     * @return
+     */
     protected SentimentAnalyzer train(BayesianNetwork bn, File f, String screenName) {
         final SentimentAnalyzer analyzer = analyze(f, 100, ImmutableSet.of(screenName));
 
@@ -244,6 +267,13 @@ public class NluSentimentApplication implements CommandLineRunner {
                 corrects * 100.0 / testAnalyzer.words.size());
     }
 
+    /**
+     * Main application code, it will {@link #train(BayesianNetwork, File, String)}
+     * using training CSV files from @dakwatuna and @farhatabbaslaw,
+     * then predict using given test CSV file.
+     * @param args
+     * @throws Exception
+     */
     @Override
     public void run(String... args) throws Exception {
         final BayesianNetwork bn = new BayesianNetwork();
@@ -253,8 +283,8 @@ public class NluSentimentApplication implements CommandLineRunner {
         train2(bn, screenNames);
         log.info("BN: {}", bn.toStringComplete());
 
-//        testClassify(bn, new File("data/tl_dakwatuna_2015-04-03_test.csv"), screenNames, "dakwatuna");
-       testClassify(bn, new File("data/tl_farhatabbaslaw_2015-04-03_test.csv"), screenNames, "farhatabbaslaw");
+        testClassify(bn, new File("data/tl_dakwatuna_2015-04-03_test.csv"), screenNames, "dakwatuna");
+//       testClassify(bn, new File("data/tl_farhatabbaslaw_2015-04-03_test.csv"), screenNames, "farhatabbaslaw");
 
 //        propagate(screenNamePv, wordPvs.get("nasional").getStates().get(0));
 //        propagate(screenNamePv, wordPvs.get("nasional").getStates().get(1));
