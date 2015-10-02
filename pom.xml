@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>id.ac.itb.lumen</groupId>
+	<groupId>org.lskk.lumen</groupId>
 	<artifactId>nlu-sentiment</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -14,13 +14,13 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.2.3.RELEASE</version>
+		<version>1.2.6.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<start-class>id.ac.itb.lumen.nlu.sentiment.NluSentimentApplication</start-class>
+		<start-class>org.lskk.lumen.nlu.sentiment.NluSentimentApplication</start-class>
 		<java.version>1.8</java.version>
 	</properties>
 
@@ -33,7 +33,7 @@
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>3.3</version>
+			<version>3.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
